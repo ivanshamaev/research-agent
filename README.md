@@ -275,3 +275,11 @@ python main.py "тема" --max-steps 3 --verbose
 - **[structlog](https://www.structlog.org/)** — структурированное логирование
 - **[Tavily](https://tavily.com/)** — API веб-поиска, оптимизированный для LLM
 - **[pytest](https://pytest.org/) + [respx](https://lundberg.github.io/respx/)** — тесты с mocked HTTP
+
+# Ollama
+```
+# Установить Ollama: https://ollama.com/
+sudo snap install ollama
+ollama pull llama3.2
+python main.py "RAG best practices" --provider ollama --model llama3.2
+```
