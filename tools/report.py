@@ -47,8 +47,25 @@ async def write_report(
         The LLM already wrote the content in the tool_use call.
         We just assemble the final document structure here.
     """
-    # TODO: implement
-    # 1. Append formatted sources section to content if sources provided
-    # 2. Count words
-    # 3. Return ReportResult
-    raise NotImplementedError
+    sources = sources or []
+
+    full_content = content
+
+    if sources:
+        refs = "\n\n## References\n\n"
+        for i, src in enumerate(sources, 1):
+            src_title = src.get("title") or src.get("url", "")
+            src_url = src.get("url", "")
+            refs += f"{i}. [{src_title}]({src_url})\n"
+        full_content = content.rstrip() + refs
+
+    word_count = len(full_content.split())
+
+    log.info("report_written", title=title, word_count=word_count, sources=len(sources))
+
+    return ReportResult(
+        title=title,
+        content=full_content,
+        sources=sources,
+        word_count=word_count,
+    )

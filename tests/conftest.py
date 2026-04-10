@@ -125,3 +125,7 @@ def mock_env(monkeypatch: pytest.MonkeyPatch) -> None:
     """Inject dummy API keys so settings validation passes in tests."""
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-key")
     monkeypatch.setenv("TAVILY_API_KEY", "tvly-test-key")
+    # Also patch the already-instantiated settings singleton
+    from config.settings import settings  # noqa: PLC0415
+    monkeypatch.setattr(settings, "ANTHROPIC_API_KEY", "sk-ant-test-key")
+    monkeypatch.setattr(settings, "TAVILY_API_KEY", "tvly-test-key")

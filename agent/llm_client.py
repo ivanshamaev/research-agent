@@ -106,7 +106,6 @@ class AnthropicClient:
             self._client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
         return self._client
 
-    # TODO: implement
     async def complete(
         self,
         messages: list[dict[str, Any]],
@@ -118,9 +117,49 @@ class AnthropicClient:
         Applies token budget trimming and exponential backoff retry.
         On tool_use response, returns the raw message object for orchestrator parsing.
         """
-        raise NotImplementedError
+        client = self._get_client()
+        trimmed = _trim_history(messages)
 
-    # TODO: implement
+        async def _call() -> Any:
+            kwargs: dict[str, Any] = {
+                "model": self.model,
+                "max_tokens": self.max_tokens,
+                "messages": trimmed,
+            }
+            if tools:
+                kwargs["tools"] = tools
+            if system:
+                kwargs["system"] = system
+            return await client.messages.create(**kwargs)
+
+        response = await self._with_retry(_call)
+
+        # Convert SDK response object to plain dict (matching mock format)
+        content = []
+        for block in response.content:
+            if block.type == "tool_use":
+                content.append({
+                    "type": "tool_use",
+                    "id": block.id,
+                    "name": block.name,
+                    "input": block.input,
+                })
+            elif block.type == "text":
+                content.append({"type": "text", "text": block.text})
+
+        return {
+            "id": response.id,
+            "type": "message",
+            "role": response.role,
+            "content": content,
+            "model": response.model,
+            "stop_reason": response.stop_reason,
+            "usage": {
+                "input_tokens": response.usage.input_tokens,
+                "output_tokens": response.usage.output_tokens,
+            },
+        }
+
     async def stream(
         self,
         messages: list[dict[str, Any]],
@@ -128,8 +167,22 @@ class AnthropicClient:
         system: str = "",
     ) -> AsyncIterator[str]:
         """Stream text deltas from the Anthropic messages API."""
-        raise NotImplementedError
-        yield  # make this a generator function
+        client = self._get_client()
+        trimmed = _trim_history(messages)
+
+        kwargs: dict[str, Any] = {
+            "model": self.model,
+            "max_tokens": self.max_tokens,
+            "messages": trimmed,
+        }
+        if tools:
+            kwargs["tools"] = tools
+        if system:
+            kwargs["system"] = system
+
+        async with client.messages.stream(**kwargs) as stream_ctx:
+            async for text in stream_ctx.text_stream:
+                yield text
 
     async def _with_retry(self, coro_fn: Any, *args: Any, **kwargs: Any) -> Any:
         """Retry coroutine with exponential backoff on rate limit errors."""

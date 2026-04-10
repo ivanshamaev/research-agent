@@ -38,9 +38,25 @@ async def search_web(
             ...
         ]
     """
-    # TODO: implement using tavily-python SDK
-    # from tavily import AsyncTavilyClient
-    # client = AsyncTavilyClient(api_key=settings.TAVILY_API_KEY)
-    # response = await client.search(query, max_results=max_results)
-    # return [{"url": r["url"], "title": r["title"], "snippet": r.get("content", "")} ...]
-    raise NotImplementedError
+    try:
+        from tavily import AsyncTavilyClient  # noqa: PLC0415
+
+        client = AsyncTavilyClient(api_key=settings.TAVILY_API_KEY)
+        response = await client.search(query, max_results=max_results)
+
+        results: list[dict[str, str]] = []
+        for r in response.get("results", []):
+            results.append({
+                "url": r.get("url", ""),
+                "title": r.get("title", ""),
+                "snippet": r.get("content", ""),
+                "score": str(r.get("score", "")),
+            })
+
+        log.info("search_web_done", query=query, count=len(results))
+        return results
+
+    except ToolError:
+        raise
+    except Exception as e:
+        raise ToolError(str(e), tool_name="search_web") from e

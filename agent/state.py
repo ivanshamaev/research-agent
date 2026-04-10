@@ -62,20 +62,18 @@ class AgentState:
     step: int = 0
     report: str | None = None
 
-    # TODO: implement
     def append_message(self, message: Message) -> None:
         """Append a message to the conversation history (append-only)."""
-        raise NotImplementedError
+        self.messages.append(message)
 
-    # TODO: implement
     def add_source(self, source: Source) -> None:
         """Add a source, deduplicating by URL."""
-        raise NotImplementedError
+        if not any(s.url == source.url for s in self.sources):
+            self.sources.append(source)
 
-    # TODO: implement
     def to_api_messages(self) -> list[dict[str, Any]]:
         """Convert messages to the format expected by the Anthropic API."""
-        raise NotImplementedError
+        return [{"role": msg.role, "content": msg.content} for msg in self.messages]
 
     def increment_step(self) -> None:
         self.step += 1

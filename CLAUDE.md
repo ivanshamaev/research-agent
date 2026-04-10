@@ -71,10 +71,13 @@ pip install -e ".[dev]"
 cp .env.example .env
 
 # Run the agent
-python -m research_agent "Best practices for building RAG systems"
+python main.py "Best practices for building RAG systems"
 
 # Run with options
-python -m research_agent "topic" --model claude-sonnet-4-6 --max-steps 15 --save
+python main.py "topic" --model claude-sonnet-4-6 --max-steps 15 --save
+
+# Or via installed script (after pip install -e .)
+research-agent "topic" --save
 
 # Run tests
 pytest tests/ -x -v
@@ -234,7 +237,7 @@ Implement in dependency order: `state.py` → `llm_client.py` → `registry.py` 
 
 ### Debugging a stuck ReAct loop
 ```bash
-LOG_LEVEL=DEBUG python -m research_agent "test topic" --max-steps 3
+LOG_LEVEL=DEBUG python main.py "test topic" --max-steps 3
 ```
 Check structlog output for `tool_dispatched` events.
 Missing events = LLM not calling tools → inspect system prompt in `orchestrator.py`.

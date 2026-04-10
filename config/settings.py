@@ -30,10 +30,12 @@ class Settings(BaseSettings):
 
     # ── API keys ───────────────────────────────────────────────────────────────
     ANTHROPIC_API_KEY: str = Field(
-        description="Anthropic Claude API key. Required."
+        default="",
+        description="Anthropic Claude API key. Required for production.",
     )
     TAVILY_API_KEY: str = Field(
-        description="Tavily web search API key. Required."
+        default="",
+        description="Tavily web search API key. Required for production.",
     )
 
     # ── LLM ───────────────────────────────────────────────────────────────────

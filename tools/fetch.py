@@ -9,7 +9,9 @@ from __future__ import annotations
 import asyncio
 from typing import Any
 
+import httpx
 import structlog
+from bs4 import BeautifulSoup
 
 from config.settings import settings
 from tools.registry import ToolError
@@ -41,23 +43,53 @@ async def fetch_pages(
             {"url": "https://bad.url", "error": "Connection timeout"},
         ]
     """
-    # TODO: implement
-    # async with httpx.AsyncClient(timeout=settings.REQUEST_TIMEOUT) as client:
-    #     results = await asyncio.gather(
-    #         *[_fetch_one(client, url) for url in urls],
-    #         return_exceptions=True,
-    #     )
-    # return [r if not isinstance(r, Exception) else {"url": url, "error": str(r)} ...]
-    raise NotImplementedError
+    async with httpx.AsyncClient(
+        timeout=settings.REQUEST_TIMEOUT,
+        follow_redirects=True,
+        headers={"User-Agent": "ResearchAgent/0.1 (educational bot)"},
+    ) as client:
+        raw_results = await asyncio.gather(
+            *[_fetch_one(client, url) for url in urls],
+            return_exceptions=True,
+        )
+
+    output: list[dict[str, str]] = []
+    for url, result in zip(urls, raw_results):
+        if isinstance(result, Exception):
+            log.warning("fetch_failed", url=url, error=str(result))
+            output.append({"url": url, "error": str(result)})
+        else:
+            output.append(result)  # type: ignore[arg-type]
+
+    success_count = sum(1 for r in output if "error" not in r)
+    log.info("fetch_pages_done", total=len(urls), success=success_count)
+
+    return output
 
 
-async def _fetch_one(client: Any, url: str) -> dict[str, str]:
-    """Fetch a single URL and extract text content.
+async def _fetch_one(client: httpx.AsyncClient, url: str) -> dict[str, str]:
+    """Fetch a single URL and extract text content using BeautifulSoup."""
+    response = await client.get(url)
+    response.raise_for_status()
 
-    TODO: implement with BeautifulSoup
-    - GET request with timeout
-    - Parse HTML, extract <title> and main text
-    - Strip scripts, styles, navigation
-    - Truncate to MAX_CONTENT_CHARS
-    """
-    raise NotImplementedError
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    # Extract title
+    title_tag = soup.find("title")
+    title = title_tag.get_text(strip=True) if title_tag else url
+
+    # Remove noise elements
+    for tag in soup(["script", "style", "nav", "header", "footer", "aside", "noscript"]):
+        tag.decompose()
+
+    # Extract main text
+    text = soup.get_text(separator="\n", strip=True)
+
+    # Collapse excessive blank lines
+    lines = [line for line in text.splitlines() if line.strip()]
+    text = "\n".join(lines)
+
+    if len(text) > MAX_CONTENT_CHARS:
+        text = text[:MAX_CONTENT_CHARS] + "\n... [truncated]"
+
+    return {"url": url, "title": title, "content": text}

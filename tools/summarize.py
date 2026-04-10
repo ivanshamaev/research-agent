@@ -40,15 +40,23 @@ async def summarize_page(
     Raises:
         ToolError: On LLM API failure.
     """
-    # TODO: implement
-    # Use a direct Anthropic API call (not the orchestrator's LLM client)
-    # to avoid polluting the main conversation history.
-    # import anthropic
-    # client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
-    # message = await client.messages.create(
-    #     model=settings.DEFAULT_MODEL,
-    #     max_tokens=600,
-    #     messages=[{"role": "user", "content": SUMMARIZE_PROMPT.format(...)}]
-    # )
-    # return message.content[0].text
-    raise NotImplementedError
+    try:
+        import anthropic  # noqa: PLC0415
+
+        client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+        prompt = SUMMARIZE_PROMPT.format(focus=focus, content=content[:12_000])
+
+        message = await client.messages.create(
+            model=settings.DEFAULT_MODEL,
+            max_tokens=600,
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        summary: str = message.content[0].text  # type: ignore[union-attr]
+        log.info("summarize_done", chars_in=len(content), chars_out=len(summary))
+        return summary
+
+    except ToolError:
+        raise
+    except Exception as e:
+        raise ToolError(str(e), tool_name="summarize_page") from e

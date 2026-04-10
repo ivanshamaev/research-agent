@@ -4,7 +4,7 @@
 параллельно загружает и суммаризирует страницы, синтезирует структурированный
 Markdown-отчёт с источниками.
 
-Проект Модуля 02 курса [AI Agent Roadmap — DataTalks.ru](https://datatalk.ru).
+Проект Модуля 02 курса [AI Agent Roadmap — DataTalks.ru](https://datatalks.ru).
 
 ---
 
@@ -50,7 +50,9 @@ cp .env.example .env
 # Открыть .env и вписать ANTHROPIC_API_KEY и TAVILY_API_KEY
 
 # 3. Запустить агента
-python -m research_agent "Лучшие практики построения RAG-систем в 2024"
+python main.py "Лучшие практики построения RAG-систем в 2024"
+# или через установленный скрипт:
+research-agent "Лучшие практики построения RAG-систем в 2024"
 ```
 
 Пример вывода:
@@ -78,11 +80,14 @@ python -m research_agent "Лучшие практики построения RAG
 ## Опции командной строки
 
 ```bash
-python -m research_agent "тема"                      # базовый запуск
-python -m research_agent "тема" --max-steps 15       # больше шагов для глубокого исследования
-python -m research_agent "тема" --model claude-opus-4-6  # другая модель
-python -m research_agent "тема" --save               # сохранить отчёт в research/
-python -m research_agent "тема" --verbose            # DEBUG-лог для отладки
+python main.py "тема"                              # базовый запуск
+python main.py "тема" --max-steps 15               # больше шагов для глубокого исследования
+python main.py "тема" --model claude-opus-4-6      # другая модель
+python main.py "тема" --save                       # сохранить отчёт в research/
+python main.py "тема" --verbose                    # DEBUG-лог для отладки
+
+# После pip install -e . доступен короткий алиас:
+research-agent "тема" --save --verbose
 ```
 
 ---
@@ -167,7 +172,9 @@ mypy agent/ tools/ config/
 ### Отладка зависшего цикла
 
 ```bash
-LOG_LEVEL=DEBUG python -m research_agent "тема" --max-steps 3
+LOG_LEVEL=DEBUG python main.py "тема" --max-steps 3
+# или:
+python main.py "тема" --max-steps 3 --verbose
 ```
 
 ---
@@ -177,18 +184,16 @@ LOG_LEVEL=DEBUG python -m research_agent "тема" --max-steps 3
 | Компонент | Статус |
 |-----------|--------|
 | Скаффолд проекта, CLAUDE.md | ✅ готово |
-| `ToolRegistry` — схемы и регистрация | ✅ готово |
-| `AgentState` — история и источники | ⬜ стаб |
-| `LLMClient` — Anthropic SDK + стриминг | ⬜ стаб |
-| `search_web` — Tavily API | ⬜ стаб |
-| `fetch_pages` — async httpx + BS4 | ⬜ стаб |
-| `summarize_page` — LLM-сжатие | ⬜ стаб |
-| `write_report` — финальный отчёт | ⬜ стаб |
-| `Orchestrator` — ReAct-цикл | ⬜ стаб |
-| `display.py` — Rich UI | ⬜ стаб |
-| Интеграционные тесты | ⬜ разблокируются по мере реализации |
-
-Порядок реализации: `AgentState` → `LLMClient` → `ToolRegistry.dispatch` → инструменты → `Orchestrator`
+| `AgentState` — история и источники | ✅ готово |
+| `LLMClient` — Anthropic SDK + стриминг | ✅ готово |
+| `ToolRegistry` — схемы, регистрация, dispatch | ✅ готово |
+| `search_web` — Tavily API | ✅ готово |
+| `fetch_pages` — async httpx + BS4 | ✅ готово |
+| `summarize_page` — LLM-сжатие | ✅ готово |
+| `write_report` — финальный отчёт | ✅ готово |
+| `Orchestrator` — ReAct-цикл (5 инвариантов) | ✅ готово |
+| `display.py` — Rich UI | ✅ готово |
+| Юнит и интеграционные тесты (28/28) | ✅ готово |
 
 ---
 

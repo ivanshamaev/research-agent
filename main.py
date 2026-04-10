@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import re
 import sys
 from pathlib import Path
+from typing import Any
 
 import structlog
 
@@ -97,8 +99,18 @@ async def _run(args: argparse.Namespace) -> int:
 
 def _save_report(state: Any, reports_dir: str) -> None:
     """Save the report to a Markdown file in REPORTS_DIR."""
-    # TODO: implement — sanitize query as filename, write state.report to file
-    raise NotImplementedError
+    from ui.display import console  # noqa: PLC0415
+
+    dir_path = Path(reports_dir)
+    dir_path.mkdir(parents=True, exist_ok=True)
+
+    safe_name = re.sub(r"[^\w\s-]", "", state.query).strip()
+    safe_name = re.sub(r"\s+", "_", safe_name)[:60] or "report"
+    file_path = dir_path / f"{safe_name}.md"
+
+    file_path.write_text(state.report, encoding="utf-8")
+    log.info("report_saved", path=str(file_path))
+    console.print(f"\n[green]Report saved →[/green] {file_path}")
 
 
 def main() -> None:

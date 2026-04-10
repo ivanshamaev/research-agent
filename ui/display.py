@@ -35,16 +35,23 @@ def print_banner() -> None:
 
 def print_step(step: int, tool_name: str, tool_input: dict[str, Any]) -> None:
     """Print a step header when a tool is being called."""
-    # TODO: implement — show step number, tool name, key input args
-    raise NotImplementedError
+    # Show up to 2 key args, truncated for readability
+    preview_items = list(tool_input.items())[:2]
+    args_str = ", ".join(f"{k}={str(v)[:50]!r}" for k, v in preview_items)
+    console.print(f"\n[bold cyan]Step {step}[/bold cyan] → [yellow]{tool_name}[/yellow]({args_str})")
 
 
 @contextmanager
 def thinking_spinner(message: str = "Thinking...") -> Generator[None, None, None]:
     """Context manager that shows a spinner while the LLM is thinking."""
-    # TODO: implement using Rich Progress with SpinnerColumn
-    raise NotImplementedError
-    yield
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+        console=console,
+    ) as progress:
+        progress.add_task(message, total=None)
+        yield
 
 
 def print_report(state: AgentState) -> None:
@@ -52,16 +59,33 @@ def print_report(state: AgentState) -> None:
     if not state.report:
         console.print("[red]No report generated.[/red]")
         return
-    # TODO: implement — render state.report as Markdown, then print sources table
-    raise NotImplementedError
+
+    console.print("\n")
+    console.rule("[bold blue]Research Report[/bold blue]")
+    console.print(Markdown(state.report))
+    print_sources(state)
 
 
 def print_sources(state: AgentState) -> None:
     """Print a formatted table of all sources found during research."""
     if not state.sources:
         return
-    # TODO: implement — Rich Table with URL, title columns
-    raise NotImplementedError
+
+    table = Table(
+        title="Sources",
+        show_header=True,
+        header_style="bold blue",
+        show_lines=False,
+    )
+    table.add_column("#", style="dim", width=3)
+    table.add_column("Title", style="green", no_wrap=False)
+    table.add_column("URL", style="cyan", no_wrap=False)
+
+    for i, source in enumerate(state.sources, 1):
+        table.add_row(str(i), source.title or "—", source.url)
+
+    console.print("\n")
+    console.print(table)
 
 
 def print_summary(state: AgentState) -> None:

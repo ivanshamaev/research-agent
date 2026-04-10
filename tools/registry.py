@@ -169,7 +169,6 @@ class ToolRegistry:
         """Return registered tool names."""
         return list(self._dispatch.keys())
 
-    # TODO: implement
     async def dispatch(self, tool_name: str, **kwargs: Any) -> Any:
         """Dispatch a tool call by name.
 
@@ -177,7 +176,14 @@ class ToolRegistry:
         Propagates ToolError from tool implementations.
         Wraps unexpected exceptions in ToolError.
         """
-        raise NotImplementedError
+        if tool_name not in self._dispatch:
+            raise ToolError(f"Unknown tool: {tool_name}", tool_name=tool_name)
+        try:
+            return await self._dispatch[tool_name](**kwargs)
+        except ToolError:
+            raise
+        except Exception as e:
+            raise ToolError(str(e), tool_name=tool_name) from e
 
 
 # ── Register tools ────────────────────────────────────────────────────────────
