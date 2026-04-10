@@ -25,12 +25,12 @@ from agent.state import AgentState
 console = Console()
 
 
-def print_banner() -> None:
+def print_banner(provider: str = "", model: str = "") -> None:
     """Print the Research Agent startup banner."""
-    console.print(Panel(
-        "[bold blue]Research Agent[/bold blue]  ·  v0.1  ·  DataTalks.ru",
-        border_style="dim blue",
-    ))
+    info = f"[bold blue]Research Agent[/bold blue]  ·  v0.1  ·  DataTalks.ru"
+    if provider and model:
+        info += f"\n[dim]Provider: {provider}  ·  Model: {model}[/dim]"
+    console.print(Panel(info, border_style="dim blue"))
 
 
 def print_step(step: int, tool_name: str, tool_input: dict[str, Any]) -> None:

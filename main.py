@@ -1,8 +1,9 @@
 """main.py — CLI entry point for the Research Agent.
 
 Usage:
-    python -m research_agent "Your research topic here"
-    python -m research_agent "topic" --model claude-sonnet-4-6 --max-steps 15 --save
+    python main.py "Your research topic here"
+    python main.py "topic" --provider deepseek --model deepseek-chat --save
+    python main.py "topic" --provider ollama --model llama3.2 --verbose
 """
 
 from __future__ import annotations
@@ -17,6 +18,8 @@ from typing import Any
 import structlog
 
 log = structlog.get_logger(__name__)
+
+_PROVIDERS = ["anthropic", "openai", "openrouter", "deepseek", "qwen", "minimax", "ollama"]
 
 
 def _configure_logging(level: str) -> None:
@@ -40,12 +43,35 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="research-agent",
         description="Autonomous research agent using ReAct loop",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+providers:
+  anthropic   Claude (claude-sonnet-4-6, claude-opus-4-6, claude-haiku-4-5)
+  openai      ChatGPT (gpt-4o, gpt-4o-mini, o1, o3-mini)
+  openrouter  Any model via OpenRouter (e.g. meta-llama/llama-3.3-70b-instruct)
+  deepseek    DeepSeek (deepseek-chat, deepseek-reasoner)
+  qwen        Alibaba Qwen (qwen-plus, qwen-turbo, qwen-max)
+  minimax     MiniMax (MiniMax-Text-01)
+  ollama      Local models via Ollama (llama3.2, mistral, gemma3, etc.)
+
+examples:
+  python main.py "RAG best practices" --provider anthropic
+  python main.py "RAG best practices" --provider deepseek --model deepseek-chat
+  python main.py "RAG best practices" --provider ollama --model llama3.2
+  python main.py "RAG best practices" --provider openrouter --model meta-llama/llama-3.3-70b-instruct
+        """,
     )
     parser.add_argument("query", help="Research topic or question")
     parser.add_argument(
+        "--provider",
+        choices=_PROVIDERS,
+        default=None,
+        help="LLM provider to use (overrides LLM_PROVIDER in .env)",
+    )
+    parser.add_argument(
         "--model",
         default=None,
-        help="Override default LLM model (e.g. claude-sonnet-4-6)",
+        help="Model ID for the chosen provider (overrides DEFAULT_MODEL in .env)",
     )
     parser.add_argument(
         "--max-steps",
@@ -69,18 +95,25 @@ def _build_parser() -> argparse.ArgumentParser:
 async def _run(args: argparse.Namespace) -> int:
     """Main async entry point. Returns exit code."""
     from config.settings import settings  # noqa: PLC0415
+    from agent.llm_client import create_llm_client  # noqa: PLC0415
     from agent.orchestrator import Orchestrator  # noqa: PLC0415
     from ui.display import print_banner, print_report, print_summary  # noqa: PLC0415
 
-    # Apply CLI overrides
+    # Apply CLI overrides to settings singleton
+    if args.provider:
+        settings.LLM_PROVIDER = args.provider  # type: ignore[assignment]
     if args.model:
         settings.DEFAULT_MODEL = args.model
     if args.max_steps:
         settings.MAX_STEPS = args.max_steps
 
-    print_banner()
+    print_banner(provider=settings.LLM_PROVIDER, model=settings.DEFAULT_MODEL)
 
-    orchestrator = Orchestrator()
+    llm = create_llm_client(
+        provider=settings.LLM_PROVIDER,
+        model=settings.DEFAULT_MODEL,
+    )
+    orchestrator = Orchestrator(llm=llm)
 
     try:
         state = await orchestrator.run(args.query)

@@ -11,7 +11,7 @@ from typing import Any
 
 import structlog
 
-from agent.llm_client import AnthropicClient, LLMClientProtocol
+from agent.llm_client import LLMClientProtocol, create_llm_client
 from agent.state import AgentState, Message, Source
 from config.settings import settings
 from tools.registry import ToolError, ToolRegistry
@@ -60,7 +60,7 @@ class Orchestrator:
         registry: ToolRegistry | None = None,
         max_steps: int | None = None,
     ) -> None:
-        self.llm = llm or AnthropicClient()
+        self.llm = llm or create_llm_client()
         self.registry = registry or ToolRegistry()
         self.max_steps = max_steps or settings.MAX_STEPS
 
