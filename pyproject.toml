@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "research-agent"
+version = "0.1.0"
+description = "Autonomous research agent using ReAct loop with web search and summarization"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.40.0",
+    "httpx>=0.27.0",
+    "beautifulsoup4>=4.12.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "rich>=13.7.0",
+    "structlog>=24.1.0",
+    "python-dotenv>=1.0.0",
+    "tavily-python>=0.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "anyio[trio]>=4.4.0",
+    "respx>=0.21.0",
+    "mypy>=1.10.0",
+    "ruff>=0.4.0",
+    "types-beautifulsoup4",
+]
+
+[project.scripts]
+research-agent = "research_agent.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["research_agent*", "agent*", "tools*", "ui*", "config*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-v"
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+disallow_untyped_defs = true
+warn_return_any = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
