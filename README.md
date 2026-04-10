@@ -277,6 +277,9 @@ python main.py "тема" --max-steps 3 --verbose
 - **[pytest](https://pytest.org/) + [respx](https://lundberg.github.io/respx/)** — тесты с mocked HTTP
 
 # Ollama
+
+Если хочешь протестировать прямо сейчас без пополнения — Ollama бесплатна (локально). Нужно только установить и скачать модель:
+
 ```
 # Установить Ollama: https://ollama.com/
 sudo snap install ollama
