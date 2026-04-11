@@ -4,7 +4,7 @@
 параллельно загружает и суммаризирует страницы, синтезирует структурированный
 Markdown-отчёт с источниками.
 
-Проект Модуля 02 курса [AI Agent Roadmap — DataTalks.ru](https://datatalks.ru/ai-agents).
+Проект Модуля 02 курса [AI Agent Roadmap — DataTalks.ru](https://datatalks.ru/ai-agents/modules/02-agent-core/project/concept.html).
 
 ---
 
