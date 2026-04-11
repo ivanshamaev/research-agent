@@ -13,26 +13,26 @@ Markdown-отчёт с источниками.
 Агент реализует паттерн **ReAct (Reason + Act)**:
 
 ```mermaid
-flowchart LR
-    User(["👤 Запрос\nпользователя"])
+flowchart TD
+    User(["👤 Запрос пользователя"])
 
-    subgraph react["ReAct-цикл"]
-        direction TB
+    subgraph cycle["ReAct-цикл"]
+        direction LR
         Orch["⚙️ Orchestrator"]
-        LLM["🤖 LLM\nрешает что делать"]
+        LLM["🤖 LLM — решает что делать"]
         Orch -->|"1. messages + tools"| LLM
         LLM -->|"2. tool_use"| Orch
     end
 
     subgraph toolbox["Инструменты"]
-        direction TB
-        Search["🔍 search_web\nDuckDuckGo"]
-        Fetch["📥 fetch_pages\nhttpx + BS4"]
-        Summ["📝 summarize_page\nLLM-сжатие"]
-        Report["📄 write_report ★\nфинальный отчёт"]
+        direction LR
+        Search["🔍 search_web"]
+        Fetch["📥 fetch_pages"]
+        Summ["📝 summarize_page"]
+        Report["📄 write_report ★"]
     end
 
-    Done(["✅ Отчёт\nв Markdown"])
+    Done(["✅ Готовый отчёт в Markdown"])
 
     User --> Orch
     Orch -->|"3. dispatch"| toolbox
