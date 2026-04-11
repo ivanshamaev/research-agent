@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import os
 from typing import Any, AsyncIterator
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -124,8 +124,19 @@ def sample_html() -> str:
 def mock_env(monkeypatch: pytest.MonkeyPatch) -> None:
     """Inject dummy API keys so settings validation passes in tests."""
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-key")
-    monkeypatch.setenv("TAVILY_API_KEY", "tvly-test-key")
     # Also patch the already-instantiated settings singleton
     from config.settings import settings  # noqa: PLC0415
     monkeypatch.setattr(settings, "ANTHROPIC_API_KEY", "sk-ant-test-key")
-    monkeypatch.setattr(settings, "TAVILY_API_KEY", "tvly-test-key")
+
+
+@pytest.fixture(autouse=True)
+def mock_ddg():
+    """Prevent real DuckDuckGo calls in all tests.
+
+    Individual tests that test search_web can override with their own patch.
+    """
+    fake_results = [
+        {"href": "https://example.com", "title": "Example", "body": "search result"},
+    ]
+    with patch("ddgs.DDGS.text", return_value=fake_results):
+        yield

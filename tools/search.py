@@ -1,62 +1,77 @@
-"""search_web — web search via Tavily API.
+"""search_web — веб-поиск через DuckDuckGo (без API-ключа, бесплатно).
 
-Returns a list of search results with URLs, titles, and snippets.
-The LLM uses these to decide which pages to fetch next.
+Использует библиотеку duckduckgo-search. DDGS.text() — синхронный,
+поэтому запускается в пуле потоков через asyncio.to_thread().
+
+Результат нормализован к формату {url, title, snippet} —
+такому же, как ожидает оркестратор.
 """
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import structlog
 
-from config.settings import settings
 from tools.registry import ToolError
 
 log = structlog.get_logger(__name__)
+
+
+def _ddg_search(query: str, max_results: int) -> list[dict[str, str]]:
+    """Синхронный вызов DuckDuckGo — выполняется в отдельном потоке."""
+    from ddgs import DDGS  # noqa: PLC0415
+    from ddgs.exceptions import (  # noqa: PLC0415
+        DDGSException,
+        RatelimitException,
+        TimeoutException,
+    )
+
+    try:
+        raw: list[dict[str, Any]] = DDGS().text(query, max_results=max_results) or []
+    except (RatelimitException, TimeoutException, DDGSException) as e:
+        raise ToolError(str(e), tool_name="search_web") from e
+
+    return [
+        {
+            "url": r.get("href", ""),
+            "title": r.get("title", ""),
+            "snippet": r.get("body", ""),
+        }
+        for r in raw
+        if r.get("href")
+    ]
 
 
 async def search_web(
     query: str,
     max_results: int = 5,
 ) -> list[dict[str, str]]:
-    """Search the web using Tavily API.
+    """Поиск в интернете через DuckDuckGo.
 
     Args:
-        query: Search query string.
-        max_results: Number of results to return (1-10).
+        query: Поисковый запрос.
+        max_results: Максимальное количество результатов (1–10).
 
     Returns:
-        List of dicts with keys: url, title, snippet, score.
+        Список словарей: url, title, snippet.
 
     Raises:
-        ToolError: On API failure or missing API key.
+        ToolError: При сбое поиска (rate limit, timeout, ошибка сети).
 
     Example return:
         [
-            {"url": "https://...", "title": "...", "snippet": "...", "score": "0.95"},
+            {"url": "https://...", "title": "...", "snippet": "..."},
             ...
         ]
     """
     try:
-        from tavily import AsyncTavilyClient  # noqa: PLC0415
-
-        client = AsyncTavilyClient(api_key=settings.TAVILY_API_KEY)
-        response = await client.search(query, max_results=max_results)
-
-        results: list[dict[str, str]] = []
-        for r in response.get("results", []):
-            results.append({
-                "url": r.get("url", ""),
-                "title": r.get("title", ""),
-                "snippet": r.get("content", ""),
-                "score": str(r.get("score", "")),
-            })
-
-        log.info("search_web_done", query=query, count=len(results))
-        return results
-
+        results = await asyncio.to_thread(_ddg_search, query, max_results)
     except ToolError:
         raise
     except Exception as e:
         raise ToolError(str(e), tool_name="search_web") from e
+
+    log.info("search_web_done", query=query, count=len(results))
+    return results

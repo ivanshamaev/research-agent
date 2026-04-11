@@ -21,23 +21,25 @@ log = structlog.get_logger(__name__)
 # ── System prompt ─────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """\
-You are a research assistant that autonomously investigates topics.
+You are a research assistant. Your job is to research a topic and produce a report.
 
-You have access to these tools:
-- search_web: search the internet for information
-- fetch_pages: download and extract content from URLs
-- summarize_page: compress long page content into key points
-- write_report: synthesize findings into a final Markdown report (call this when done)
+RULES — follow them strictly:
+1. You MUST use tools. Do NOT answer from memory alone.
+2. You MUST end every session by calling the write_report tool.
+3. Never stop with a plain text response — always call a tool.
+4. The user's query is about AI/ML unless stated otherwise.
+   "RAG" means Retrieval-Augmented Generation (an AI technique), not anything else.
 
-Research process:
-1. Start with broad searches to find relevant sources
-2. Fetch the most promising pages
-3. Summarize content to extract key information
-4. Do additional searches if needed to fill gaps
-5. Call write_report when you have enough information
+WORKFLOW:
+Step 1 — Call search_web with a specific query to find sources.
+Step 2 — Call fetch_pages on the most promising URLs (pick 2-4).
+Step 3 — If any page is very long, call summarize_page on it.
+Step 4 — Call write_report with a structured Markdown report and all sources.
 
-Be thorough but efficient. Prefer parallel tool calls when possible.
-Always include source URLs in your final report.
+IMPORTANT:
+- Always call write_report at the end. This is mandatory.
+- Include source URLs in the report.
+- Be concise but thorough.
 """
 
 
@@ -68,15 +70,6 @@ class Orchestrator:
         """Execute the full ReAct loop for a research query.
 
         Returns the final AgentState with report and sources populated.
-
-        Steps:
-        1. Init AgentState with the user query as first message
-        2. Loop until write_report is called or max_steps reached:
-           a. Call LLM with current messages + tool schemas
-           b. If text response → append to state, continue
-           c. If tool_use → dispatch via registry, append result, log
-           d. If write_report in tool_use → set state.report, break
-        3. Return state
         """
         state = AgentState(query=query)
         state.append_message(self._build_initial_message(query))
@@ -98,9 +91,22 @@ class Orchestrator:
 
             stop_reason = response.get("stop_reason", "")
 
-            # Pure text response — no tool calls
+            # Pure text response — LLM ignored the rule about always using tools.
+            # Fallback: save the text as the report so the session isn't lost.
             if stop_reason == "end_turn":
-                log.info("llm_end_turn", step=state.step)
+                text_parts = [
+                    b["text"] for b in response["content"] if b.get("type") == "text"
+                ]
+                if text_parts and not state.report:
+                    raw_text = "\n\n".join(text_parts)
+                    state.report = f"# Research: {query}\n\n{raw_text}"
+                    log.warning(
+                        "fallback_report_from_text",
+                        step=state.step,
+                        chars=len(state.report),
+                    )
+                else:
+                    log.info("llm_end_turn", step=state.step)
                 break
 
             if stop_reason != "tool_use":

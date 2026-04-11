@@ -82,12 +82,6 @@ class Settings(BaseSettings):
         description="Ollama server URL. Used when LLM_PROVIDER=ollama.",
     )
 
-    # ── Search ────────────────────────────────────────────────────────────────
-    TAVILY_API_KEY: str = Field(
-        default="",
-        description="Tavily web search API key. Required for search_web tool.",
-    )
-
     # ── LLM ───────────────────────────────────────────────────────────────────
     DEFAULT_MODEL: str = Field(
         default="claude-sonnet-4-6",

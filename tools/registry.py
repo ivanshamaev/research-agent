@@ -146,6 +146,103 @@ TOOL_DISPATCH: dict[str, ToolFn] = {}
 
 # ── ToolRegistry ──────────────────────────────────────────────────────────────
 
+# ── Argument name aliases ─────────────────────────────────────────────────────
+# Open-source LLMs often use different argument names than the schema specifies.
+# Map known aliases → canonical names per tool.
+
+_ARG_ALIASES: dict[str, dict[str, str]] = {
+    "fetch_pages": {
+        "url_list": "urls",
+        "url":      "urls",
+        "page_urls": "urls",
+        "pages":    "urls",
+        "links":    "urls",
+        "page_list": "urls",
+    },
+    "search_web": {
+        "search_query": "query",
+        "search_term":  "query",
+        "q":            "query",
+        "search":       "query",
+        "keywords":     "query",
+        "num_results":  "max_results",
+        "n_results":    "max_results",
+        "count":        "max_results",
+        "n":            "max_results",
+        "limit":        "max_results",
+        "k":            "max_results",
+    },
+    "summarize_page": {
+        "text":         "content",
+        "page_content": "content",
+        "body":         "content",
+        "topic":        "focus",
+        "query":        "focus",
+    },
+    "write_report": {
+        "body":           "content",
+        "text":           "content",
+        "report_content": "content",
+        "report_title":   "title",
+        "source_list":    "sources",
+        "references":     "sources",
+        "citations":      "sources",
+    },
+}
+
+
+def _normalize_arg_names(tool_name: str, kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Rename any aliased argument keys to their canonical names."""
+    aliases = _ARG_ALIASES.get(tool_name, {})
+    if not aliases:
+        return kwargs
+    return {aliases.get(k, k): v for k, v in kwargs.items()}
+
+
+def _coerce_args(
+    kwargs: dict[str, Any],
+    input_schema: dict[str, Any],
+) -> dict[str, Any]:
+    """Coerce argument types to match the JSON Schema declaration.
+
+    Open-source LLMs often produce string values for integer/array fields,
+    or wrap arrays in JSON strings. This normalises them before dispatch.
+    """
+    import json as _json  # noqa: PLC0415
+
+    properties: dict[str, Any] = input_schema.get("properties", {})
+    result = dict(kwargs)
+
+    for key, value in list(result.items()):
+        prop_type = properties.get(key, {}).get("type")
+        if prop_type == "integer" and not isinstance(value, int):
+            try:
+                result[key] = int(value)
+            except (ValueError, TypeError):
+                pass
+        elif prop_type == "number" and not isinstance(value, (int, float)):
+            try:
+                result[key] = float(value)
+            except (ValueError, TypeError):
+                pass
+        elif prop_type == "boolean" and not isinstance(value, bool):
+            result[key] = str(value).lower() in ("true", "1", "yes")
+        elif prop_type == "array":
+            if isinstance(value, str):
+                # LLM serialised array as JSON string: "[\"a\",\"b\"]"
+                try:
+                    parsed = _json.loads(value)
+                    if isinstance(parsed, list):
+                        result[key] = parsed
+                except _json.JSONDecodeError:
+                    # Treat bare string as single-element list
+                    result[key] = [value]
+            elif not isinstance(value, list):
+                result[key] = [value]
+
+    return result
+
+
 class ToolRegistry:
     """Central registry: schema lookup + async dispatch.
 
@@ -178,6 +275,13 @@ class ToolRegistry:
         """
         if tool_name not in self._dispatch:
             raise ToolError(f"Unknown tool: {tool_name}", tool_name=tool_name)
+
+        # 1. Rename aliased argument names (e.g. url_list → urls)
+        kwargs = _normalize_arg_names(tool_name, kwargs)
+        # 2. Coerce types (e.g. "10" → 10 for integers, "[...]" → list)
+        schema = self._schemas.get(tool_name, {})
+        kwargs = _coerce_args(kwargs, schema.get("input_schema", {}))
+
         try:
             return await self._dispatch[tool_name](**kwargs)
         except ToolError:

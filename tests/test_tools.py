@@ -6,6 +6,8 @@ Do NOT mock ToolRegistry — test real dispatch to catch schema mismatches.
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import pytest
 import respx
 import httpx
@@ -16,34 +18,53 @@ from tools.registry import ToolRegistry, ToolError
 # ── search_web ────────────────────────────────────────────────────────────────
 
 @pytest.mark.anyio
-@respx.mock
 async def test_search_web_returns_results():
-    """search_web returns a list of results with url, title, snippet."""
-    respx.post("https://api.tavily.com/search").mock(
-        return_value=httpx.Response(200, json={
-            "results": [
-                {"url": "https://example.com", "title": "Example", "content": "snippet", "score": 0.9},
-            ]
-        })
-    )
-    from tools.search import search_web
-    results = await search_web("test query", max_results=1)
+    """search_web возвращает список результатов с url, title, snippet."""
+    mock_raw = [
+        {"href": "https://example.com", "title": "Example", "body": "snippet text"},
+    ]
+    with patch("tools.search._ddg_search", return_value=mock_raw[:1]):
+        # _ddg_search уже возвращает нормализованный формат — нет, он возвращает raw
+        pass
+
+    # Патчим на уровне DDGS.text (вызывается внутри _ddg_search в потоке)
+    with patch("ddgs.DDGS.text", return_value=mock_raw):
+        from tools.search import search_web
+        results = await search_web("test query", max_results=1)
+
     assert len(results) == 1
     assert results[0]["url"] == "https://example.com"
     assert results[0]["title"] == "Example"
-    assert "snippet" in results[0]
+    assert results[0]["snippet"] == "snippet text"
 
 
 @pytest.mark.anyio
-@respx.mock
-async def test_search_web_raises_tool_error_on_api_failure():
-    """search_web raises ToolError (not raw exception) on API failure."""
-    respx.post("https://api.tavily.com/search").mock(
-        side_effect=httpx.ConnectError("connection refused")
-    )
-    from tools.search import search_web
-    with pytest.raises(ToolError):
-        await search_web("test query")
+async def test_search_web_empty_results():
+    """search_web возвращает пустой список при отсутствии результатов."""
+    with patch("ddgs.DDGS.text", return_value=[]):
+        from tools.search import search_web
+        results = await search_web("very obscure query no results")
+    assert results == []
+
+
+@pytest.mark.anyio
+async def test_search_web_raises_tool_error_on_ratelimit():
+    """search_web оборачивает RatelimitException в ToolError."""
+    from ddgs.exceptions import RatelimitException
+
+    with patch("ddgs.DDGS.text", side_effect=RatelimitException("rate limit")):
+        from tools.search import search_web
+        with pytest.raises(ToolError):
+            await search_web("test query")
+
+
+@pytest.mark.anyio
+async def test_search_web_raises_tool_error_on_generic_exception():
+    """search_web оборачивает любое неожиданное исключение в ToolError."""
+    with patch("ddgs.DDGS.text", side_effect=RuntimeError("network error")):
+        from tools.search import search_web
+        with pytest.raises(ToolError):
+            await search_web("test query")
 
 
 # ── fetch_pages ───────────────────────────────────────────────────────────────

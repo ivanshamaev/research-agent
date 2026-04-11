@@ -36,7 +36,7 @@ LLM сам решает, сколько шагов нужно. Цикл заве
 
 ## Быстрый старт
 
-**Требования:** Python 3.11+, ключ любого LLM-провайдера, ключ Tavily API для веб-поиска.
+**Требования:** Python 3.11+, ключ любого LLM-провайдера. Веб-поиск работает через DuckDuckGo — бесплатно, без ключа.
 
 ```bash
 # 1. Клонировать и установить
@@ -167,7 +167,6 @@ research-agent "тема" --provider deepseek --save
 | `QWEN_API_KEY` | — | Ключ Alibaba DashScope |
 | `MINIMAX_API_KEY` | — | Ключ MiniMax |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | URL сервера Ollama |
-| `TAVILY_API_KEY` | — | Ключ Tavily для веб-поиска (обязателен) |
 | `DEFAULT_MODEL` | `claude-sonnet-4-6` | ID модели для выбранного провайдера |
 | `MAX_STEPS` | `10` | Максимум шагов ReAct-цикла |
 | `REQUEST_TIMEOUT` | `30` | Таймаут HTTP-запросов (сек) |
@@ -189,7 +188,7 @@ research-agent/
 │
 ├── tools/
 │   ├── registry.py            # Реестр инструментов: JSON Schema + диспетчер
-│   ├── search.py              # search_web  → Tavily API
+│   ├── search.py              # search_web  → DuckDuckGo (бесплатно, без ключа)
 │   ├── fetch.py               # fetch_pages → httpx async + BeautifulSoup
 │   ├── summarize.py           # summarize_page → LLM-сжатие
 │   └── report.py              # write_report → терминальный инструмент
@@ -255,7 +254,7 @@ python main.py "тема" --max-steps 3 --verbose
 | `AgentState` — история и источники | ✅ готово |
 | `LLMClient` — Anthropic SDK + стриминг | ✅ готово |
 | `ToolRegistry` — схемы, регистрация, dispatch | ✅ готово |
-| `search_web` — Tavily API | ✅ готово |
+| `search_web` — DuckDuckGo (без ключа) | ✅ готово |
 | `fetch_pages` — async httpx + BS4 | ✅ готово |
 | `summarize_page` — LLM-сжатие | ✅ готово |
 | `write_report` — финальный отчёт | ✅ готово |
@@ -273,7 +272,7 @@ python main.py "тема" --max-steps 3 --verbose
 - **[Pydantic v2](https://docs.pydantic.dev/)** — валидация настроек и данных
 - **[Rich](https://rich.readthedocs.io/)** — красивый терминальный UI
 - **[structlog](https://www.structlog.org/)** — структурированное логирование
-- **[Tavily](https://tavily.com/)** — API веб-поиска, оптимизированный для LLM
+- **[duckduckgo-search](https://github.com/deedy5/duckduckgo_search)** — бесплатный веб-поиск без API-ключа
 - **[pytest](https://pytest.org/) + [respx](https://lundberg.github.io/respx/)** — тесты с mocked HTTP
 
 # Ollama

@@ -133,7 +133,7 @@ Group imports: stdlib → third-party → local. Use absolute imports within the
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `ANTHROPIC_API_KEY` | Yes | — | Claude API key |
-| `TAVILY_API_KEY` | Yes | — | Web search API key |
+| ~~`TAVILY_API_KEY`~~ | — | — | Удалён. Поиск через DuckDuckGo, ключ не нужен. |
 | `DEFAULT_MODEL` | No | `claude-sonnet-4-6` | LLM model ID |
 | `MAX_STEPS` | No | `10` | Hard stop for ReAct loop |
 | `REQUEST_TIMEOUT` | No | `30` | HTTP timeout in seconds |
