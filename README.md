@@ -13,7 +13,7 @@ Markdown-отчёт с источниками.
 Агент реализует паттерн **ReAct (Reason + Act)**:
 
 ```mermaid
-flowchart TD
+flowchart LR
     User(["👤 Запрос пользователя"])
 
     subgraph cycle["ReAct-цикл"]
