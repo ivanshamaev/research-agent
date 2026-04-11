@@ -43,3 +43,6 @@ Thumbs.db
 # Reports output (keep directory, ignore contents)
 research/*.md
 !research/.gitkeep
+
+# MkDocs build output
+site/

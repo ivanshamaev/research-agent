@@ -1,0 +1,68 @@
+site_name: Research Agent
+site_description: Documentation site for the Research Agent project
+docs_dir: docs
+site_dir: site
+use_directory_urls: true
+
+theme:
+  name: material
+  language: ru
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - toc.follow
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      check_paths: true
+      base_path:
+        - .
+        - docs
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+extra_css:
+  - assets/stylesheets/docs.css
+
+extra_javascript:
+  - assets/javascripts/mermaid-panzoom.js
+
+exclude_docs: |
+  README.md
+
+nav:
+  - Home: index.md
+  - Documentation:
+      - Overview: docs-overview.md
+      - Common Diagram: common-diagram.md
+      - 00. Concepts: 01-concepts.md
+      - 02. Architecture: 02-architecture.md
+      - 03. Setup: 03-setup.md
+      - 04. Agent State: 04-agent-state.md
+      - 05. LLM Client: 05-llm-client.md
+      - 06. Tools: 06-tools.md
+      - 07. Registry: 07-registry.md
+      - 08. Orchestrator: 08-orchestrator.md
+      - 09. Testing: 09-testing.md
+      - 10. Add Tool: 10-add-tool.md

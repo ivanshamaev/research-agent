@@ -1,0 +1,78 @@
+.md-typeset .mermaid-panzoom {
+  position: relative;
+  margin: 1.5rem 0;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.8rem;
+  background: var(--md-default-bg-color);
+  overflow: hidden;
+}
+
+.md-typeset .mermaid-panzoom__stage {
+  position: relative;
+  overflow: hidden;
+  padding: 1rem;
+  cursor: grab;
+  touch-action: none;
+}
+
+.md-typeset .mermaid-panzoom__stage.is-dragging {
+  cursor: grabbing;
+}
+
+.md-typeset .mermaid-panzoom .mermaid {
+  margin: 0;
+}
+
+.md-typeset .mermaid-panzoom svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  user-select: none;
+}
+
+.md-typeset .mermaid-panzoom__controls {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.md-typeset .mermaid-panzoom__button {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--md-default-bg-color) 88%, transparent);
+  color: var(--md-default-fg-color);
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.75rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.md-typeset .mermaid-panzoom__button:hover {
+  background: var(--md-accent-fg-color--transparent);
+}
+
+.md-typeset .mermaid-panzoom__hint {
+  position: absolute;
+  left: 1rem;
+  bottom: 0.75rem;
+  z-index: 1;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--md-default-bg-color) 92%, transparent);
+  color: var(--md-default-fg-color--light);
+  font-size: 0.72rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .md-typeset .mermaid-panzoom__hint {
+    display: none;
+  }
+}
