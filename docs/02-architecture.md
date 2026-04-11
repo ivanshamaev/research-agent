@@ -39,9 +39,9 @@ graph TD
     Config -.->|MAX_STEPS| Orch
     Orch --> UI
 
-    style Report fill:#f9f,stroke:#c0c,stroke-width:2px
-    style Orch fill:#dff,stroke:#09c,stroke-width:2px
-    style Registry fill:#fff3cd,stroke:#f0ad4e,stroke-width:2px
+    style Report fill:#f9f,stroke:#c0c,stroke-width:2px,color:#000
+    style Orch fill:#dff,stroke:#09c,stroke-width:2px,color:#000
+    style Registry fill:#fff3cd,stroke:#f0ad4e,stroke-width:2px,color:#000
 ```
 
 Каждый компонент отвечает за одну вещь — это принцип единственной
