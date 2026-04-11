@@ -13,33 +13,31 @@ Markdown-отчёт с источниками.
 Агент реализует паттерн **ReAct (Reason + Act)**:
 
 ```mermaid
-flowchart TD
-    User(["👤 Запрос пользователя"])
-    Orch["⚙️ Orchestrator\nReAct-цикл"]
-    LLM["🤖 LLM\nрешает что делать"]
+flowchart LR
+    User(["👤 Запрос\nпользователя"])
 
-    Search["🔍 search_web\nDuckDuckGo → список URL"]
-    Fetch["📥 fetch_pages\nзагрузка страниц параллельно"]
-    Summ["📝 summarize_page\nсжатие длинного текста"]
-    Report["📄 write_report\nсинтез финального отчёта ★"]
+    subgraph react["ReAct-цикл"]
+        direction TB
+        Orch["⚙️ Orchestrator"]
+        LLM["🤖 LLM\nрешает что делать"]
+        Orch -->|"1. messages + tools"| LLM
+        LLM -->|"2. tool_use"| Orch
+    end
 
-    Done(["✅ Готовый отчёт в Markdown"])
+    subgraph toolbox["Инструменты"]
+        direction TB
+        Search["🔍 search_web\nDuckDuckGo"]
+        Fetch["📥 fetch_pages\nhttpx + BS4"]
+        Summ["📝 summarize_page\nLLM-сжатие"]
+        Report["📄 write_report ★\nфинальный отчёт"]
+    end
+
+    Done(["✅ Отчёт\nв Markdown"])
 
     User --> Orch
-    Orch -->|messages + tools| LLM
-    LLM -->|tool_use| Orch
-
-    Orch -->|dispatch| Search
-    Orch -->|dispatch| Fetch
-    Orch -->|dispatch| Summ
-    Orch -->|dispatch| Report
-
-    Search -->|результаты| Orch
-    Fetch -->|текст страниц| Orch
-    Summ -->|резюме| Orch
-    Report -->|завершает цикл| Done
-
-    Orch -->|"ещё нужна информация → следующий шаг"| LLM
+    Orch -->|"3. dispatch"| toolbox
+    toolbox -->|"4. результат"| Orch
+    Report --> Done
 
     style Report fill:#f9f,stroke:#c0c,stroke-width:2px,color:#000
     style Done fill:#d4edda,stroke:#28a745,color:#000
