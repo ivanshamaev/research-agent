@@ -65,28 +65,28 @@ flowchart TD
     ORCH --> REG
     REG --> SCHEMA
 
-    ORCH -->|complete(messages, tools, SYSTEM_PROMPT)| OAI
+    ORCH -->|complete with messages tools and system prompt| OAI
     OAI --> TRIM
     OAI --> REQMAP
     REQMAP --> GATE
     GATE --> RESPMAP
     RESPMAP --> ORCH
 
-    REG -->|dispatch(tool_name, **kwargs)| NORMALIZE
+    REG -->|dispatch tool call| NORMALIZE
 
     NORMALIZE --> SEARCH
     SEARCH --> DDG
     DDG --> WEBSEARCH
-    SEARCH -->|list[{url,title,snippet}]| REG
+    SEARCH -->|search result list| REG
     REG -->|search results| ORCH
-    ORCH -->|add_source() for search results| STATE
+    ORCH -->|add sources from search| STATE
 
     NORMALIZE --> FETCH
     FETCH --> HTTPX
     HTTPX --> URLS
     URLS --> BS4
     BS4 --> FETCH
-    FETCH -->|list[{url,title,content}]| REG
+    FETCH -->|fetched page list| REG
     REG -->|fetched page content| ORCH
 
     NORMALIZE -. optional .-> SUMM
@@ -98,7 +98,7 @@ flowchart TD
     REPORT --> RESULT
     RESULT --> REG
     REG -->|ReportResult| ORCH
-    ORCH -->|state.report = result.content| STATE
+    ORCH -->|store final report in state| STATE
 
     ORCH -->|return AgentState| MAIN
     MAIN -->|render final output| DISPLAY
