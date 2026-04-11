@@ -25,6 +25,8 @@ LLMProvider = Literal[
     "qwen",
     "minimax",
     "ollama",
+    "gatellm",   # https://gatellm.ru — OpenAI-compatible gateway
+    "custom",    # any OpenAI-compatible endpoint via CUSTOM_API_BASE_URL
 ]
 
 
@@ -46,7 +48,8 @@ class Settings(BaseSettings):
         default="anthropic",
         description=(
             "Which LLM provider to use. "
-            "Options: anthropic, openai, openrouter, deepseek, qwen, minimax, ollama"
+            "Options: anthropic, openai, openrouter, deepseek, qwen, minimax, "
+            "ollama, gatellm, custom"
         ),
     )
 
@@ -75,6 +78,23 @@ class Settings(BaseSettings):
         default="",
         description="MiniMax API key. Required when LLM_PROVIDER=minimax.",
     )
+    GATELLM_API_KEY: str = Field(
+        default="",
+        description="GateLLM API key (gatellm.ru). Required when LLM_PROVIDER=gatellm.",
+    )
+
+    # ── Custom / generic OpenAI-compatible endpoint ───────────────────────────
+    CUSTOM_API_BASE_URL: str = Field(
+        default="",
+        description=(
+            "Base URL for any OpenAI-compatible API. "
+            "Used when LLM_PROVIDER=custom. Example: https://my-llm.example.com/v1"
+        ),
+    )
+    CUSTOM_API_KEY: str = Field(
+        default="",
+        description="API key for the custom endpoint. Used when LLM_PROVIDER=custom.",
+    )
 
     # ── Local / Ollama ────────────────────────────────────────────────────────
     OLLAMA_BASE_URL: str = Field(
@@ -88,7 +108,7 @@ class Settings(BaseSettings):
         description=(
             "Model ID to use. Must match the chosen provider. "
             "Examples: claude-sonnet-4-6, gpt-4o, deepseek-chat, qwen-plus, "
-            "mistral/mistral-small-3.1-24b (OpenRouter), llama3.2 (Ollama)."
+            "qwen/qwen-2.5-72b-instruct (gatellm/openrouter), llama3.2 (ollama)."
         ),
     )
 

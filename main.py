@@ -19,7 +19,7 @@ import structlog
 
 log = structlog.get_logger(__name__)
 
-_PROVIDERS = ["anthropic", "openai", "openrouter", "deepseek", "qwen", "minimax", "ollama"]
+_PROVIDERS = ["anthropic", "openai", "openrouter", "deepseek", "qwen", "minimax", "ollama", "gatellm", "custom"]
 
 
 def _configure_logging(level: str) -> None:
@@ -53,12 +53,15 @@ providers:
   qwen        Alibaba Qwen (qwen-plus, qwen-turbo, qwen-max)
   minimax     MiniMax (MiniMax-Text-01)
   ollama      Local models via Ollama (llama3.2, mistral, gemma3, etc.)
+  gatellm     GateLLM gateway (gatellm.ru) — set GATELLM_API_KEY
+  custom      Any OpenAI-compatible endpoint — set CUSTOM_API_BASE_URL + CUSTOM_API_KEY
 
 examples:
   python main.py "RAG best practices" --provider anthropic
   python main.py "RAG best practices" --provider deepseek --model deepseek-chat
   python main.py "RAG best practices" --provider ollama --model llama3.2
   python main.py "RAG best practices" --provider openrouter --model meta-llama/llama-3.3-70b-instruct
+  python main.py "RAG best practices" --provider gatellm --model qwen/qwen-2.5-72b-instruct
         """,
     )
     parser.add_argument("query", help="Research topic or question")

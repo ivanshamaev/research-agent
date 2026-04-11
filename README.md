@@ -47,26 +47,30 @@ pip install -e ".[dev]"
 
 # 2. Настроить переменные окружения
 cp .env.example .env
-# Открыть .env, выбрать LLM_PROVIDER и вписать нужный API-ключ + TAVILY_API_KEY
+# Открыть .env, выбрать LLM_PROVIDER и вписать нужный API-ключ
 
 # 3. Запустить агента
 python main.py "Лучшие практики построения RAG-систем в 2024"
 # или через установленный скрипт:
 research-agent "Лучшие практики построения RAG-систем в 2024"
 ```
-Пример заполнения .env
-```
-LLM_PROVIDER=deepseek
-DEEPSEEK_API_KEY=sk-29712b12d60d43929f4d........
-DEFAULT_MODEL=deepseek-chat
+Пример заполнения `.env` для **GateLLM** (gatellm.ru — OpenAI-совместимый шлюз):
 
-TAVILY_API_KEY=
+```env
+LLM_PROVIDER=gatellm
+GATELLM_API_KEY=sk-44f6008381068c81f0.......................................
+DEFAULT_MODEL=qwen/qwen-2.5-72b-instruct
 
 LOG_LEVEL=INFO
 MAX_STEPS=10
 REQUEST_TIMEOUT=30
 REPORTS_DIR=research/
 ```
+
+> Быстрый старт GateLLM:
+> 1. Создайте API-ключ на [gatellm.ru](https://gatellm.ru/) в разделе «API ключи»
+> 2. Ключ используется в заголовке `Authorization: Bearer sk-ваш-ключ`
+> 3. Эндпоинт: `https://gatellm.ru/v1/` (OpenAI-совместимый)
 
 
 Пример вывода:
@@ -104,8 +108,12 @@ REPORTS_DIR=research/
 | **Qwen (Alibaba)** | `qwen` | `qwen-plus`, `qwen-turbo`, `qwen-max`, `qwen-long` | [dashscope.aliyuncs.com](https://dashscope.aliyuncs.com/) |
 | **MiniMax** | `minimax` | `MiniMax-Text-01` | [minimaxi.chat](https://www.minimaxi.chat/) |
 | **Ollama** (локально) | `ollama` | `llama3.2`, `mistral`, `gemma3`, `phi4`, `qwen2.5` | [ollama.com](https://ollama.com/) — бесплатно |
+| **GateLLM** | `gatellm` | `qwen/qwen-2.5-72b-instruct`, `meta-llama/llama-3.3-70b-instruct` | [gatellm.ru](https://gatellm.ru/) |
+| **Custom** | `custom` | любой OpenAI-совместимый эндпоинт | — |
 
 > **Через OpenRouter** доступно 300+ моделей: Claude, GPT-4o, Llama, Mistral, Gemini, Gemma и другие — по одному ключу.
+>
+> **GateLLM** — российский OpenAI-совместимый шлюз с доступом к Qwen, Llama и другим открытым моделям.
 
 ### Настройка провайдера
 
@@ -132,6 +140,17 @@ DEFAULT_MODEL=llama3.2
 LLM_PROVIDER=openrouter
 OPENROUTER_API_KEY=sk-or-...
 DEFAULT_MODEL=meta-llama/llama-3.3-70b-instruct
+
+# Вариант 5 — GateLLM (gatellm.ru — OpenAI-совместимый шлюз)
+LLM_PROVIDER=gatellm
+GATELLM_API_KEY=sk-44f6008381068c81f0.......................................
+DEFAULT_MODEL=qwen/qwen-2.5-72b-instruct
+
+# Вариант 6 — любой OpenAI-совместимый эндпоинт
+LLM_PROVIDER=custom
+CUSTOM_API_BASE_URL=https://my-llm.example.com/v1
+CUSTOM_API_KEY=sk-...
+DEFAULT_MODEL=my-model-name
 ```
 
 ---
@@ -159,7 +178,7 @@ research-agent "тема" --provider deepseek --save
 
 | Переменная | По умолчанию | Описание |
 |------------|--------------|----------|
-| `LLM_PROVIDER` | `anthropic` | Провайдер: `anthropic` / `openai` / `openrouter` / `deepseek` / `qwen` / `minimax` / `ollama` |
+| `LLM_PROVIDER` | `anthropic` | Провайдер: `anthropic` / `openai` / `openrouter` / `deepseek` / `qwen` / `minimax` / `ollama` / `gatellm` / `custom` |
 | `ANTHROPIC_API_KEY` | — | Ключ Anthropic (нужен при `LLM_PROVIDER=anthropic`) |
 | `OPENAI_API_KEY` | — | Ключ OpenAI (нужен при `LLM_PROVIDER=openai`) |
 | `OPENROUTER_API_KEY` | — | Ключ OpenRouter |
@@ -167,6 +186,9 @@ research-agent "тема" --provider deepseek --save
 | `QWEN_API_KEY` | — | Ключ Alibaba DashScope |
 | `MINIMAX_API_KEY` | — | Ключ MiniMax |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | URL сервера Ollama |
+| `GATELLM_API_KEY` | — | Ключ GateLLM (нужен при `LLM_PROVIDER=gatellm`) |
+| `CUSTOM_API_BASE_URL` | — | URL любого OpenAI-совместимого эндпоинта |
+| `CUSTOM_API_KEY` | — | Ключ для `CUSTOM_API_BASE_URL` |
 | `DEFAULT_MODEL` | `claude-sonnet-4-6` | ID модели для выбранного провайдера |
 | `MAX_STEPS` | `10` | Максимум шагов ReAct-цикла |
 | `REQUEST_TIMEOUT` | `30` | Таймаут HTTP-запросов (сек) |

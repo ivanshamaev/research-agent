@@ -8,6 +8,8 @@ Supports:
   - Qwen (DashScope)         via openai SDK + custom base_url
   - MiniMax                  via openai SDK + custom base_url
   - Ollama (local models)    via openai SDK + custom base_url
+  - GateLLM (gatellm.ru)    via openai SDK + custom base_url
+  - Custom endpoint          via openai SDK + CUSTOM_API_BASE_URL
 
 All clients implement LLMClientProtocol.
 Use create_llm_client() to get the right client from settings.
@@ -207,6 +209,8 @@ _PROVIDER_BASE_URLS: dict[str, str] = {
     "qwen":        "https://dashscope.aliyuncs.com/compatible-mode/v1",
     "minimax":     "https://api.minimaxi.chat/v1",
     "ollama":      "",  # resolved from OLLAMA_BASE_URL at runtime
+    "gatellm":     "https://gatellm.ru/v1",
+    "custom":      "",  # resolved from CUSTOM_API_BASE_URL at runtime
 }
 
 # API key per provider (resolved from settings at runtime)
@@ -218,6 +222,8 @@ def _get_api_key(provider: str) -> str:
         "qwen":       settings.QWEN_API_KEY,
         "minimax":    settings.MINIMAX_API_KEY,
         "ollama":     "ollama",  # Ollama doesn't require a real key
+        "gatellm":    settings.GATELLM_API_KEY,
+        "custom":     settings.CUSTOM_API_KEY,
     }
     return key_map.get(provider, "")
 
@@ -376,6 +382,8 @@ class OpenAICompatibleClient:
             base_url = _PROVIDER_BASE_URLS.get(self.provider, "")
             if self.provider == "ollama":
                 base_url = settings.OLLAMA_BASE_URL.rstrip("/") + "/v1"
+            elif self.provider == "custom":
+                base_url = settings.CUSTOM_API_BASE_URL.rstrip("/")
 
             api_key = _get_api_key(self.provider)
 
