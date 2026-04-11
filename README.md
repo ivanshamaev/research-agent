@@ -12,21 +12,39 @@ Markdown-отчёт с источниками.
 
 Агент реализует паттерн **ReAct (Reason + Act)**:
 
-```
-Запрос пользователя
-      ↓
-  Orchestrator  ←──────────────────────────────────────────────────────┐
-      ↓                                                                  │
-   LLM думает: нужен инструмент?                                        │
-      ├── search_web("RAG best practices 2024")                         │
-      │       ↓ 8 результатов                                           │
-      ├── fetch_pages(["url1", "url2"])  ← параллельно                  │
-      │       ↓ содержимое страниц                                      │
-      ├── summarize_page(content)                                        │
-      │       ↓ сжатые тезисы                              ещё цикл? ──┘
-      └── write_report(title, content, sources)
-              ↓
-         Готовый отчёт в Markdown
+```mermaid
+flowchart TD
+    User(["👤 Запрос пользователя"])
+    Orch["⚙️ Orchestrator\nReAct-цикл"]
+    LLM["🤖 LLM\nрешает что делать"]
+
+    Search["🔍 search_web\nDuckDuckGo → список URL"]
+    Fetch["📥 fetch_pages\nзагрузка страниц параллельно"]
+    Summ["📝 summarize_page\nсжатие длинного текста"]
+    Report["📄 write_report\nсинтез финального отчёта ★"]
+
+    Done(["✅ Готовый отчёт в Markdown"])
+
+    User --> Orch
+    Orch -->|messages + tools| LLM
+    LLM -->|tool_use| Orch
+
+    Orch -->|dispatch| Search
+    Orch -->|dispatch| Fetch
+    Orch -->|dispatch| Summ
+    Orch -->|dispatch| Report
+
+    Search -->|результаты| Orch
+    Fetch -->|текст страниц| Orch
+    Summ -->|резюме| Orch
+    Report -->|завершает цикл| Done
+
+    Orch -->|"ещё нужна информация → следующий шаг"| LLM
+
+    style Report fill:#f9f,stroke:#c0c,stroke-width:2px,color:#000
+    style Done fill:#d4edda,stroke:#28a745,color:#000
+    style Orch fill:#dff,stroke:#09c,stroke-width:2px,color:#000
+    style LLM fill:#fff3cd,stroke:#f0ad4e,stroke-width:2px,color:#000
 ```
 
 LLM сам решает, сколько шагов нужно. Цикл завершается, когда она вызывает
