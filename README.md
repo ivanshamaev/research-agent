@@ -307,3 +307,118 @@ sudo snap install ollama
 ollama pull llama3.2
 python main.py "RAG best practices" --provider ollama --model llama3.2
 ```
+
+# Результат работы
+
+```bash
+python main.py "RAG best practices" --provider gatellm
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Research Agent  ·  v0.1  ·  DataTalks.ru                                                                                                                                      │
+│ Provider: gatellm  ·  Model: qwen/qwen-2.5-72b-instruct                                                                                                                       │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+INFO:agent.orchestrator:[info     ] react_step                     [agent.orchestrator] max_steps=10 step=1
+INFO:httpx:HTTP Request: POST https://gatellm.ru/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agent.orchestrator:[info     ] tool_dispatched                [agent.orchestrator] input_preview="{'query': 'Retrieval-Augmented Generation best practices', 'max_results': 5}" step=1 tool=search_web
+INFO:primp:response: https://en.wikipedia.org/w/api.php?action=opensearch&profile=fuzzy&limit=1&search=Retrieval-Augmented%20Generation%20best%20practices 200
+INFO:primp:response: https://grokipedia.com/api/typeahead?query=Retrieval-Augmented+Generation+best+practices&limit=1 200
+INFO:primp:response: https://consent.yahoo.com/v2/collectConsent?sessionId=3_cc-session_ea430abb-89a8-4538-85be-15137682677e 200
+INFO:primp:response: https://www.mojeek.com/search?q=Retrieval-Augmented+Generation+best+practices 200
+INFO:tools.search:[info     ] search_web_done                [tools.search] count=5 query='Retrieval-Augmented Generation best practices'
+INFO:agent.orchestrator:[info     ] react_step                     [agent.orchestrator] max_steps=10 step=2
+INFO:httpx:HTTP Request: POST https://gatellm.ru/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:agent.orchestrator:[warning  ] end_turn_no_content_retry      [agent.orchestrator] step=2
+INFO:agent.orchestrator:[info     ] react_step                     [agent.orchestrator] max_steps=10 step=3
+INFO:httpx:HTTP Request: POST https://gatellm.ru/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agent.orchestrator:[info     ] tool_dispatched                [agent.orchestrator] input_preview="{'urls': ['https://aclanthology.org/2025.coling-main.449/', 'https://aclanthology.org/2024.emnlp-main.981/', 'https://ar" step=3 tool=fetch_pages
+INFO:httpx:HTTP Request: GET https://arxiv.org/html/2602.03368v2 "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://arxiv.org/abs/2407.01219 "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.chitika.com/rag-challenges-and-solution/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://aclanthology.org/2024.emnlp-main.981/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://aclanthology.org/2025.coling-main.449/ "HTTP/1.1 200 OK"
+INFO:tools.fetch:[info     ] fetch_pages_done               [tools.fetch] success=5 total=5
+INFO:agent.orchestrator:[info     ] react_step                     [agent.orchestrator] max_steps=10 step=4
+INFO:httpx:HTTP Request: POST https://gatellm.ru/v1/chat/completions "HTTP/1.1 200 OK"
+WARNING:agent.orchestrator:[warning  ] end_turn_no_content_retry      [agent.orchestrator] step=4
+INFO:agent.orchestrator:[info     ] react_step                     [agent.orchestrator] max_steps=10 step=5
+INFO:httpx:HTTP Request: POST https://gatellm.ru/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agent.orchestrator:[info     ] tool_dispatched                [agent.orchestrator] input_preview='{\'title\': \'Best Practices in Retrieval-Augmented Generation (RAG)\', \'content\': "# Best Practices in Retrieval-Augmented ' step=5 tool=write_report
+INFO:tools.report:[info     ] report_written                 [tools.report] sources=5 title='Best Practices in Retrieval-Augmented Generation (RAG)' word_count=700
+INFO:agent.orchestrator:[info     ] react_done                     [agent.orchestrator] reason=write_report step=5
+
+
+──────────────────────────────────────────────────────────────────────────────── Research Report ────────────────────────────────────────────────────────────────────────────────
+                                                             Best Practices in Retrieval-Augmented Generation (RAG)                                                              
+
+Retrieval-Augmented Generation (RAG) is a powerful approach that combines retrieval mechanisms with large language models to enhance the accuracy and relevance of generated     
+responses. This report outlines best practices for developing and deploying RAG systems, focusing on key components, optimization strategies, and practical considerations.      
+
+Key Components of RAG Systems                                                                                                                                                    
+
+  1 Language Model Size: Larger language models generally provide better performance but at the cost of increased computational resources. Smaller models can be more efficient  
+    but may sacrifice some accuracy.                                                                                                                                             
+  2 Prompt Design: Carefully crafted prompts can significantly influence the quality of the generated output. Prompts should be clear, concise, and context-aware.               
+  3 Document Chunk Size: The size of the retrieved documents or passages can impact performance. Smaller chunks can be processed faster but may lack necessary context. Larger   
+    chunks provide more context but can slow down the system.                                                                                                                    
+  4 Knowledge Base Size and Structure: The knowledge base should be well-curated and regularly updated to ensure the inclusion of the latest information. Metadata tagging and   
+    domain-specific retrieval strategies are crucial for precision.                                                                                                              
+  5 Retrieval Stride: The overlap between retrieved documents can affect the quality of the generated output. A higher stride can improve coherence but may increase             
+    computational load.                                                                                                                                                          
+  6 Query Expansion Techniques: Techniques such as synonyms, paraphrasing, and semantic expansion can enhance the retrieval process and improve the relevance of the results.    
+  7 Contrastive In-Context Learning: This approach can help in generating more contextually relevant and accurate responses by leveraging context-aware learning.                
+  8 Multilingual Knowledge Bases: Support for multiple languages can expand the applicability of RAG systems, especially in global contexts.                                     
+  9 Focus Mode Retrieving: Retrieving relevant context at the sentence level can improve the precision of generated responses.                                                   
+
+Optimization Strategies                                                                                                                                                          
+
+ 1 Balancing Performance and Efficiency: RAG systems should strike a balance between contextual richness and generation efficiency. This can be achieved by optimizing the size  
+   and structure of the knowledge base, the retrieval mechanisms, and the language model.                                                                                        
+ 2 Multimodal Retrieval: Integrating visual and textual data can enhance the system's ability to handle complex queries and generate multimedia content.                         
+ 3 Systematic Evaluation: Conducting extensive experiments and evaluations can help identify the most effective configurations and practices. This includes testing different    
+   combinations of components and refining the system based on performance metrics.                                                                                              
+ 4 Mitigating Hallucinations: RAG systems can reduce the risk of hallucinations by integrating real-time and up-to-date information, reducing reliance on static and potentially 
+   biased datasets.                                                                                                                                                              
+
+Practical Considerations                                                                                                                                                         
+
+ 1 Scalability: RAG systems should be designed to scale efficiently, handling increasing volumes of data and user queries without significant performance degradation.           
+ 2 Real-Time Updates: Regular updates to the knowledge base are crucial, especially in domains like healthcare and finance where information changes rapidly.                    
+ 3 Domain-Specific Adaptation: Customizing RAG systems for specific domains can improve their effectiveness and relevance. For example, in the medical domain, using             
+   domain-specific retrieval strategies and curating relevant knowledge bases can enhance the system's performance.                                                              
+ 4 User Feedback and Iteration: Incorporating user feedback and continuously refining the system based on real-world usage can lead to better outcomes and user satisfaction.    
+
+Conclusion                                                                                                                                                                       
+
+Retrieval-Augmented Generation (RAG) is a promising technology with the potential to revolutionize information retrieval and generation. By following these best practices,      
+developers can build more accurate, efficient, and contextually relevant RAG systems tailored to diverse applications and domains.                                               
+
+References:                                                                                                                                                                      
+
+ 1 Li, S., Stenzel, L., Eickhoff, C., & Bahrainian, S. A. (2025). Enhancing Retrieval-Augmented Generation: A Study of Best Practices. Proceedings of the 31st International     
+   Conference on Computational Linguistics.                                                                                                                                      
+ 2 Wang, X., Wang, Z., Gao, X., Zhang, F., Wu, Y., Xu, Z., ... & Huang, X. (2024). Searching for Best Practices in Retrieval-Augmented Generation. Proceedings of the 2024       
+   Conference on Empirical Methods in Natural Language Processing.                                                                                                               
+ 3 Li, L., & Zhu, W. (2026). Pursuing Best Industrial Practices for Retrieval-Augmented Generation in the Medical Domain. ArXiv.                                                 
+ 4 Chitika. (n.d.). Retrieval-Augmented Generation: Challenges & Solutions. Chitika.                                                                                             
+
+References                                                                                                                                                                       
+
+ 1 Enhancing Retrieval-Augmented Generation: A Study of Best Practices - ACL Anthology                                                                                           
+ 2 Searching for Best Practices in Retrieval-Augmented Generation - ACL Anthology                                                                                                
+ 3 [2407.01219] Searching for Best Practices in Retrieval-Augmented Generation                                                                                                   
+ 4 Pursuing Best Industrial Practices for Retrieval-Augmented Generation in the Medical Domain                                                                                   
+ 5 Retrieval-Augmented Generation: Challenges & Solutions                                                                                                                        
+
+
+                                                            Sources                                                            
+┏━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ #   ┃ Title                                                          ┃ URL                                                  ┃
+┡━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ 1   │ Enhancing Retrieval-Augmented Generation: A Study of Best      │ https://aclanthology.org/2025.coling-main.449/       │
+│ 2   │ Searching for Best Practices in Retrieval-Augmented Generation │ https://aclanthology.org/2024.emnlp-main.981/        │
+│ 3   │ [2407.01219] Searching for Best Practices in                   │ https://arxiv.org/abs/2407.01219                     │
+│ 4   │ Pursuing Best Industrial Practices for Retrieval-Augmented     │ https://arxiv.org/html/2602.03368v2                  │
+│ 5   │ Retrieval-Augmented Generation: Challenges & Solutions         │ https://www.chitika.com/rag-challenges-and-solution/ │
+└─────┴────────────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────┘
+
+Steps: 5  ·  Sources: 5  ·  Messages: 11
+```

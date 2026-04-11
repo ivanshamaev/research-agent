@@ -91,13 +91,14 @@ class Orchestrator:
 
             stop_reason = response.get("stop_reason", "")
 
-            # Pure text response — LLM ignored the rule about always using tools.
-            # Fallback: save the text as the report so the session isn't lost.
+            # end_turn: LLM stopped without calling a tool.
             if stop_reason == "end_turn":
                 text_parts = [
                     b["text"] for b in response["content"] if b.get("type") == "text"
                 ]
+
                 if text_parts and not state.report:
+                    # LLM wrote the report as plain text instead of calling write_report.
                     raw_text = "\n\n".join(text_parts)
                     state.report = f"# Research: {query}\n\n{raw_text}"
                     log.warning(
@@ -105,8 +106,22 @@ class Orchestrator:
                         step=state.step,
                         chars=len(state.report),
                     )
-                else:
-                    log.info("llm_end_turn", step=state.step)
+                    break
+
+                if not state.report and state.step < self.max_steps:
+                    # LLM returned nothing — inject a hard reminder and loop again.
+                    log.warning("end_turn_no_content_retry", step=state.step)
+                    state.append_message(Message(
+                        role="user",
+                        content=(
+                            "You stopped without calling write_report. "
+                            "You MUST call write_report now to finish the research. "
+                            "Use all the information you have gathered so far."
+                        ),
+                    ))
+                    continue  # give the model one more chance
+
+                log.info("llm_end_turn", step=state.step)
                 break
 
             if stop_reason != "tool_use":

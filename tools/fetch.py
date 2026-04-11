@@ -18,8 +18,9 @@ from tools.registry import ToolError
 
 log = structlog.get_logger(__name__)
 
-# Maximum content length per page (chars) to avoid filling context window
-MAX_CONTENT_CHARS = 8_000
+# Maximum content length per page (chars) to avoid filling context window.
+# 5 pages × 3000 chars = ~15k chars ≈ 4k tokens — safe for most providers.
+MAX_CONTENT_CHARS = 3_000
 
 
 async def fetch_pages(
