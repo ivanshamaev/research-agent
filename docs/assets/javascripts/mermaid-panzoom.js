@@ -243,9 +243,26 @@
     window.setTimeout(function () { scan(document); }, 3000);
   }
 
-  document.addEventListener("DOMContentLoaded", boot);
+  /* ── boot ────────────────────────────────────────────────── */
+
+  function initMermaid() {
+    if (typeof window.mermaid === "undefined") return;
+    window.mermaid.initialize({ startOnLoad: false, theme: "default" });
+    var nodes = document.querySelectorAll(".mermaid:not([data-processed])");
+    if (nodes.length) {
+      window.mermaid.run({ nodes: Array.from(nodes) });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    initMermaid();
+    boot();
+  });
 
   if (typeof window.document$ !== "undefined" && typeof window.document$.subscribe === "function") {
-    window.document$.subscribe(boot);
+    window.document$.subscribe(function () {
+      initMermaid();
+      boot();
+    });
   }
 })();
