@@ -232,7 +232,7 @@
     const observer = new MutationObserver(function () {
       window.requestAnimationFrame(function () { scan(document); });
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-processed"] });
   }
 
   function boot() {
@@ -240,6 +240,7 @@
     scan(document);
     window.setTimeout(function () { scan(document); }, 300);
     window.setTimeout(function () { scan(document); }, 1000);
+    window.setTimeout(function () { scan(document); }, 3000);
   }
 
   document.addEventListener("DOMContentLoaded", boot);
