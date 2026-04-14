@@ -13,8 +13,6 @@
   padding: 1rem;
   cursor: grab;
   touch-action: none;
-  height: 420px;
-  box-sizing: border-box;
 }
 
 .md-typeset .mermaid-panzoom__stage.is-dragging {
@@ -28,7 +26,7 @@
 .md-typeset .mermaid-panzoom svg {
   display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
   max-width: none;
   user-select: none;
 }
