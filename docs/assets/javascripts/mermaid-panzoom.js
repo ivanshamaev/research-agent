@@ -53,6 +53,11 @@
       dragStart: null,
     };
 
+    /* Honour mermaid's natural diagram width so nodes don't inflate */
+    const naturalMaxWidth = svg.style.maxWidth || svg.getAttribute("width") || "";
+    if (naturalMaxWidth && naturalMaxWidth !== "none") {
+      stage.style.maxWidth = naturalMaxWidth;
+    }
     svg.style.width    = "100%";
     svg.style.height   = "auto";
     svg.style.maxWidth = "none";
