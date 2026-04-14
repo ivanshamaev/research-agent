@@ -211,9 +211,6 @@ flowchart LR
     F -->|"[{url, title, content}]"| S["json.dumps()"]
     S -->|строка| State(["💾 AgentState\ntool_result"])
 
-    style N fill:#fff3cd,stroke:#f0ad4e,color:#000
-    style C fill:#cce5ff,stroke:#004085,color:#000
-    style F fill:#d4edda,stroke:#28a745,color:#000
 ```
 
 Когда LLM вызывает `fetch_pages` и передаёт `{"url_list": "[\"https://a.com\"]"}`:

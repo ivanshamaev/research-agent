@@ -45,8 +45,6 @@ graph TD
     Orch -->|state| Display
     Display -->|отчёт в терминал| User
 
-    style Report fill:#f9f,stroke:#c0c,stroke-width:2px,color:#000
-    style Orch fill:#dff,stroke:#09c,stroke-width:2px,color:#000
 ```
 
 ---

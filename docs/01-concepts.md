@@ -62,8 +62,6 @@ flowchart TD
     U -->|резюме| LLM
     R -->|завершает цикл| Done(["✅ Готово"])
 
-    style R fill:#f9f,stroke:#c0c,stroke-width:2px,color:#000
-    style Done fill:#d4edda,stroke:#28a745,color:#000
 ```
 
 ---
@@ -98,10 +96,6 @@ flowchart LR
     O -->|ещё нужна информация| R
     O -->|достаточно данных| End
 
-    style R fill:#fff3cd,stroke:#f0ad4e,color:#000
-    style A fill:#d4edda,stroke:#28a745,color:#000
-    style O fill:#cce5ff,stroke:#004085,color:#000
-    style End fill:#f8d7da,stroke:#721c24,color:#000
 ```
 
 ### Пример шага

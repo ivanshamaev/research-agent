@@ -33,10 +33,6 @@ flowchart LR
     LLM -->|tool_use: my_tool| Orch
     Orch --> Tool
 
-    style F fill:#d4edda,stroke:#28a745,color:#000
-    style S fill:#cce5ff,stroke:#004085,color:#000
-    style D fill:#fff3cd,stroke:#f0ad4e,color:#000
-    style T fill:#f8d7da,stroke:#721c24,color:#000
 ```
 
 ## Чеклист добавления инструмента

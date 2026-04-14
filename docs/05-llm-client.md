@@ -96,8 +96,6 @@ flowchart TD
 
     Resp --> Orch["⚙️ Orchestrator\nне знает какой провайдер"]
 
-    style Resp fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000
-    style Orch fill:#dff,stroke:#09c,color:#000
 ```
 
 ## AnthropicClient
