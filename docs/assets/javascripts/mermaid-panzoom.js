@@ -54,7 +54,7 @@
     };
 
     svg.style.width    = "100%";
-    svg.style.height   = "auto";
+    svg.style.height   = "100%";
     svg.style.maxWidth = "none";
     setViewBox(svg, state.current);
 
